@@ -66,10 +66,37 @@ export default defineComponent({
             }
         };
 
+        // Format timestamp as "time ago"
+        const formatTimeAgo = (timestamp: number): string => {
+            if (!timestamp) return '';
+            
+            const now = new Date();
+            const date = new Date(timestamp);
+            const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+            
+            let interval = Math.floor(seconds / 31536000); // years
+            if (interval >= 1) return `${interval} ${interval === 1 ? 'year' : 'years'} ago`;
+            
+            interval = Math.floor(seconds / 2592000); // months
+            if (interval >= 1) return `${interval} ${interval === 1 ? 'month' : 'months'} ago`;
+            
+            interval = Math.floor(seconds / 86400); // days
+            if (interval >= 1) return `${interval} ${interval === 1 ? 'day' : 'days'} ago`;
+            
+            interval = Math.floor(seconds / 3600); // hours
+            if (interval >= 1) return `${interval} ${interval === 1 ? 'hour' : 'hours'} ago`;
+            
+            interval = Math.floor(seconds / 60); // minutes
+            if (interval >= 1) return `${interval} ${interval === 1 ? 'minute' : 'minutes'} ago`;
+            
+            return `${Math.floor(seconds)} ${Math.floor(seconds) === 1 ? 'second' : 'seconds'} ago`;
+        };
+
         return {
             votes,
             voteCount,
             formatDate,
+            formatTimeAgo,
             showVoteDialog,
             voteComment,
             handleVoteClick,
@@ -85,16 +112,22 @@ export default defineComponent({
     <div class="feature-item">
         <div class="d-flex">
             <div class="vote-column mr-4">
-                <v-btn
-                    icon
-                    variant="text"
-                    size="small"
-                    color="grey-lighten-1"
-                    @click="handleVoteClick"
-                    class="vote-button"
-                >
-                    <v-icon>mdi-chevron-up</v-icon>
-                </v-btn>
+                <v-tooltip location="left" theme="light">
+                    <template v-slot:activator="{ props }">
+                        <v-btn
+                            v-bind="props"
+                            icon
+                            variant="text"
+                            size="small"
+                            color="grey-lighten-1"
+                            @click="handleVoteClick"
+                            class="vote-button"
+                        >
+                            <v-icon>mdi-chevron-up</v-icon>
+                        </v-btn>
+                    </template>
+                    <span>Vote Up</span>
+                </v-tooltip>
                 <div class="vote-count text-center">
                     +{{ voteCount }}
                 </div>
@@ -104,24 +137,37 @@ export default defineComponent({
                 @click="() => clickFeature(feature.uuid)"
                 :style="{ cursor: 'pointer' }"
             >
-                <div class="d-flex align-center mb-1">
-                    <v-chip 
-                        v-if="feature.inProgress" 
-                        color="primary" 
-                        class="text-caption mr-2" 
-                        size="x-small"
+                <div class="d-flex align-center justify-space-between mb-1">
+                    <div class="d-flex align-center">
+                        <v-chip 
+                            v-if="feature.inProgress" 
+                            color="primary" 
+                            class="text-caption mr-2" 
+                            size="x-small"
+                        >
+                            In Progress
+                        </v-chip>
+                        <v-chip 
+                            v-else-if="feature.isComplete" 
+                            color="success" 
+                            class="text-caption mr-2" 
+                            size="x-small"
+                        >
+                            Complete
+                        </v-chip>
+                        <span class="feature-title font-weight-medium">{{ feature.title }}</span>
+                    </div>
+                    <time 
+                        :datetime="new Date(feature.timestamp).toLocaleString()" 
+                        class="timestamp text-caption text-grey"
                     >
-                        In Progress
-                    </v-chip>
-                    <v-chip 
-                        v-else-if="feature.isComplete" 
-                        color="success" 
-                        class="text-caption mr-2" 
-                        size="x-small"
-                    >
-                        Complete
-                    </v-chip>
-                    <span class="feature-title font-weight-medium">{{ feature.title }}</span>
+                        <v-tooltip location="right" theme="light">
+                            <template v-slot:activator="{ props }">
+                                <span v-bind="props">{{ formatTimeAgo(feature.timestamp) }}</span>
+                            </template>
+                            <span>{{ new Date(feature.timestamp).toLocaleString() }}</span>
+                        </v-tooltip>
+                    </time>
                 </div>
                 <div class="feature-description text-caption text-grey mb-1">
                     {{ feature.description }}
@@ -135,6 +181,7 @@ export default defineComponent({
                         <span class="text-caption">{{ votes.length }} Comment{{ votes.length === 1 ? '' : 's' }}</span>
                     </div>
                 </div>
+
             </div>
         </div>
 
@@ -219,6 +266,17 @@ export default defineComponent({
     
     .feature-description {
         line-height: 1.4;
+    }
+    
+    .timestamp {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.6);
+        white-space: nowrap;
+        
+        &:hover {
+            text-decoration: underline;
+            cursor: help;
+        }
     }
 }
 </style>
