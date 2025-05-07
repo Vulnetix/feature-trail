@@ -115,11 +115,11 @@ export default defineComponent({
                 <v-tooltip location="left" theme="light">
                     <template v-slot:activator="{ props }">
                         <v-btn
+                            :style="{ visibility: !feature.inProgress && !feature.isComplete ? 'visible' : 'hidden' }"
                             v-bind="props"
                             icon
                             variant="text"
-                            size="small"
-                            color="grey-lighten-1"
+                            color="green-lighten-1"
                             @click="handleVoteClick"
                             class="vote-button"
                         >
@@ -128,9 +128,20 @@ export default defineComponent({
                     </template>
                     <span>Vote Up</span>
                 </v-tooltip>
-                <div class="vote-count text-center">
-                    +{{ voteCount }}
-                </div>
+                <v-tooltip location="left" theme="light">
+                    <template v-slot:activator="{ props }">
+                        <div
+                            v-bind="props"
+                            class="vote-count text-center"
+                            :class="{ 'text-primary': voteCount > 0, 'text-info': voteCount === 0 }"
+                            :style="{ cursor: 'pointer' }"
+                        >
+                            {{ voteCount > 0 ? '+' : '' }}
+                            {{ Math.abs(voteCount) }}
+                        </div>
+                    </template>
+                    <span>{{ voteCount > 0 ? 'Votes' : 'No Votes Yet' }}</span>
+                </v-tooltip>
             </div>
             <div
                 class="feature-content flex-grow-1"
@@ -256,7 +267,6 @@ export default defineComponent({
         .vote-count {
             font-size: 14px;
             font-weight: 600;
-            color: rgb(var(--v-theme-primary));
         }
     }
     
