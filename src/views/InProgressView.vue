@@ -2,7 +2,6 @@
 import { defineComponent, onMounted } from 'vue';
 import { useRoadmapStore } from '../stores/roadmap';
 import FeatureItem from '../components/FeatureItem.vue';
-import type { RoadmapState } from '../stores/roadmap';
 
 export default defineComponent({
     name: 'InProgressView',

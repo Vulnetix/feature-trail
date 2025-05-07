@@ -20,7 +20,7 @@ export interface FeatureRequest {
 }
 
 export interface Feature {
-    uuid: string;
+uuid: string;
     title: string;
     description: string;
     timestamp: number;

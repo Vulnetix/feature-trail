@@ -129,7 +129,7 @@ export default defineComponent({
                         :to="`/feature/${feature.uuid}`"
                     >
                         <v-icon size="small" class="mr-1">mdi-comment-outline</v-icon>
-                        <span class="text-caption">Comments</span>
+                        <span class="text-caption">{{ votes.length }} Comment{{ votes.length === 1 ? '' : 's' }}</span>
                     </v-btn>
                 </div>
             </div>
