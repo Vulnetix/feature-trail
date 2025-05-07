@@ -1,8 +1,8 @@
-import type { PagesFunction, Vote, EventContext } from '../../../../src/shared/interfaces';
+import type { PagesFunction, Vote, Feature, Env } from '../../../../src/shared/interfaces';
 import { saveVoteToSheet, getAccessToken } from '../../../../src/shared/gman';
 
 // Handle POST requests to /api/feature/[uuid]/vote
-export const onRequestPost: PagesFunction = async (context: EventContext) => {
+export const onRequestPost: PagesFunction = async (context) => {
     try {
         // Extract feature UUID from URL
         const featureUuid = context.params.uuid as string;
@@ -40,8 +40,8 @@ export const onRequestPost: PagesFunction = async (context: EventContext) => {
         };
         
         // Get OAuth 2.0 Access Token
-        const clientId = context.env.GOOGLE_CLIENT_ID;
-        const secretKey = context.env.GOOGLE_CLIENT_SECRET;
+        const clientId = (context.env as Env).GOOGLE_CLIENT_ID;
+        const secretKey = (context.env as Env).GOOGLE_CLIENT_SECRET;
         if (!secretKey || !clientId) {
             console.error('GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is not defined in environment variables.');
             return new Response(
@@ -55,28 +55,20 @@ export const onRequestPost: PagesFunction = async (context: EventContext) => {
             );
         }
         
-        const accessToken = await getAccessToken(clientId, secretKey, context.env.KV_STORE);
-        return new Response(accessToken, {
-            status: 200,
-            headers: { 'Content-Type': 'text/html' }
-        });
+        const accessToken = await getAccessToken(clientId, secretKey, (context.env as Env).KV_STORE);
 
         if (!accessToken) {
-            console.error('Failed to obtain access token.');
-            return new Response(
-                JSON.stringify({
-                    error: 'Failed to Authenticate with Google Sheets API'
-                }),
-                {
-                    status: 401,
-                    headers: { 'Content-Type': 'application/json' }
-                }
-            );
+            return new Response(`Unable to retrieve access token.`, { status: 401 });
         }
+
+        let featuresString = await (context.env as Env).KV_STORE.get("features");
+        let features: Feature[] = featuresString ? JSON.parse(featuresString) : [];
         
         // Save vote to Google Sheets
         await saveVoteToSheet(vote, accessToken);
         
+        await (context.env as Env).KV_STORE.put("features", JSON.stringify(features));
+
         return new Response(
             JSON.stringify({ message: 'Vote recorded successfully' }),
             {

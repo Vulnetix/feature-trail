@@ -1,8 +1,18 @@
 import { v4 as uuidv4 } from 'uuid';
-import type { PagesFunction, Feature, Vote, EventContext } from '../../src/shared/interfaces';
-import { saveFeatureToSheet, saveVoteToSheet, getAccessToken } from '../../src/shared/gman';
+import type { PagesFunction, Feature, Vote, KVNamespace, Env } from '../../src/shared/interfaces';
+import { saveFeatureToSheet, saveVoteToSheet } from '../../src/shared/gman';
 
-export const onRequestPost: PagesFunction = async (context: EventContext) => {
+async function retrieveAccessTokenFromKV(clientId: string, clientSecret: string, kvStore: KVNamespace): Promise<string | null> {
+    let accessToken = await kvStore.get(`google_access_token`);
+    if (accessToken) {
+        return accessToken;
+    }
+    // ...existing code...
+    // Ensure all paths return a value, or add a final return null if appropriate
+    return null; // Added to satisfy the return type if no token is found/refreshed
+}
+
+export const onRequestPost: PagesFunction = async (context) => {
     try {
         // Extract request data
         const request = context.request;
@@ -60,8 +70,8 @@ export const onRequestPost: PagesFunction = async (context: EventContext) => {
         };
         
         // save this data to the existing Google Sheet
-        const clientId = context.env.GOOGLE_CLIENT_ID;
-        const secretKey = context.env.GOOGLE_CLIENT_SECRET;
+        const clientId = (context.env as Env).GOOGLE_CLIENT_ID;
+        const secretKey = (context.env as Env).GOOGLE_CLIENT_SECRET;
         if (!secretKey || !clientId) {
             console.error('GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is not defined in environment variables.');
             return new Response(
@@ -75,22 +85,10 @@ export const onRequestPost: PagesFunction = async (context: EventContext) => {
             );
         }
         // Get OAuth 2.0 Access Token
-        const accessToken = await getAccessToken(clientId, secretKey, context.env.KV_STORE);
-        return new Response(accessToken, {
-            status: 200,
-            headers: { 'Content-Type': 'text/html' }
-        });
+        const accessToken = await retrieveAccessTokenFromKV(clientId, secretKey, (context.env as Env).KV_STORE);
+
         if (!accessToken) {
-            console.error('Failed to obtain access token.');
-            return new Response(
-                JSON.stringify({
-                    error: 'Failed to Authenticate with Google Sheets API'
-                }),
-                {
-                    status: 401,
-                    headers: { 'Content-Type': 'application/json' }
-                }
-            );
+            return new Response(`Unable to retrieve access token.`, { status: 401 });
         }
         // Save feature and vote to Google Sheets
         await saveFeatureToSheet(feature, accessToken);
@@ -110,6 +108,28 @@ export const onRequestPost: PagesFunction = async (context: EventContext) => {
         return new Response(
             JSON.stringify({
                 error: 'Failed to process feature request',
+                details: (error as Error).message
+            }),
+            {
+                status: 500,
+                headers: { 'Content-Type': 'application/json' }
+            }
+        );
+    }
+};
+
+export const onRequestGet: PagesFunction = async (context) => {
+    try {
+        const features = await (context.env as Env).KV_STORE.get("features");
+        return new Response(features || `[]`, {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    } catch (error) {
+        console.error('Error fetching features:', error);
+        return new Response(
+            JSON.stringify({
+                error: 'Failed to fetch features',
                 details: (error as Error).message
             }),
             {

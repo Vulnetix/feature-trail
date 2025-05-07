@@ -1,11 +1,11 @@
-import type { PagesFunction, EventContext } from "@/shared/interfaces";
+import type { PagesFunction, Env } from "@/shared/interfaces";
 
 /**
  * Handles the GET request to /oauth/callback.
  * This function is invoked by Google after the user grants authorization.
  * It exchanges the received authorization code for an access token and stores it.
  */
-export const onRequestGet: PagesFunction = async (context: EventContext) => {
+export const onRequestGet: PagesFunction = async (context) => {
     const { request, env } = context;
     const url = new URL(request.url);
     const code = url.searchParams.get(`code`);
@@ -30,8 +30,8 @@ export const onRequestGet: PagesFunction = async (context: EventContext) => {
 
     const params = new URLSearchParams();
     params.append(`code`, code);
-    params.append(`client_id`, env.GOOGLE_CLIENT_ID);
-    params.append(`client_secret`, env.GOOGLE_CLIENT_SECRET);
+    params.append(`client_id`, (env as Record<string, string>).GOOGLE_CLIENT_ID);
+    params.append(`client_secret`, (env as Record<string, string>).GOOGLE_CLIENT_SECRET);
     params.append(`redirect_uri`, encodeURIComponent(`https://roadmap.vulnetix.com/oauth/callback`));
     params.append(`grant_type`, `authorization_code`);
 
@@ -66,7 +66,7 @@ export const onRequestGet: PagesFunction = async (context: EventContext) => {
                 headers: { 'Content-Type': `text/html` },
             });
         }
-        const csrfToken = await env.KV_STORE.get(`csrf_token`);
+        const csrfToken = await (env as Env).KV_STORE.get(`csrf_token`);
         if (!csrfToken) {
             console.error(`CSRF token not found in KV store.`);
             return new Response(`CSRF token not found. Please try again.`, {
@@ -87,7 +87,7 @@ export const onRequestGet: PagesFunction = async (context: EventContext) => {
         // Store the access token in KV. Consider a user-specific key if multiple users.
         // For this example, using a generic key.
         const accessTokenKey = `google_access_token`;
-        await env.KV_STORE.put(accessTokenKey, accessToken, {
+        await (env as Env).KV_STORE.put(accessTokenKey, accessToken, {
             expirationTtl: expiresIn, // The token will automatically be removed from KV after this many seconds
         });
 
@@ -96,7 +96,7 @@ export const onRequestGet: PagesFunction = async (context: EventContext) => {
         if (refreshToken) {
             const refreshTokenKey = `google_refresh_token`;
             // KV is suitable for refresh tokens as well. They don't have an expiry from Google's side in the same way access tokens do.
-            await env.KV_STORE.put(refreshTokenKey, refreshToken);
+            await (env as Env).KV_STORE.put(refreshTokenKey, refreshToken);
             console.log(`Refresh token stored successfully.`);
         }
 

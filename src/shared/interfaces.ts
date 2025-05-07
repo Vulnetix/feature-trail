@@ -23,7 +23,7 @@ export interface Feature {
     uuid: string;
     title: string;
     description: string;
-    timestamp: number | null;
+    timestamp: number;
     isComplete: boolean;
     needsFeedback: boolean;
     inProgress: boolean;
@@ -33,6 +33,18 @@ export interface Feature {
 export interface Vote {
     sha256: string;
     featureUuid: string;
-    timestamp: number | null;
-    comment: string;
+    timestamp: number;
+    comment?: string;
+    userIdentifier?: string;
+}
+
+export interface Env {
+    KV_STORE: KVNamespace;
+    GOOGLE_CLIENT_ID: string;
+    GOOGLE_CLIENT_SECRET: string;
+}
+
+export interface KVNamespace {
+    get(key: string): Promise<string | null>;
+    put(key: string, value: string, options?: { expirationTtl?: number }): Promise<void>;
 }

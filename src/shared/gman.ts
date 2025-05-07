@@ -208,8 +208,6 @@ export async function requestAccessToken(clientId: string, kvStore: any): Promis
     if (!response.ok) {
         return false;
     }
-    // Frontend should wait for the callback, retry the call
-    // so that the KV may hold the token
     return response.ok
 }
 
@@ -318,7 +316,7 @@ export function parseFeatures(rawData: any[][]): Feature[] {
         needsFeedback: row[5] === 'TRUE',
         inProgress: row[6] === 'TRUE',
         targetRelease: row[7] || '',
-    }));
+    } as Feature));
 }
 
 /**
@@ -337,7 +335,7 @@ export function parseVotes(rawData: any[][]): Vote[] {
         featureUuid: row[1] || '',
         timestamp: parseInt(row[2], 10) || null,
         comment: row[3] || '',
-    }));
+    } as Vote));
 }
 
 /**

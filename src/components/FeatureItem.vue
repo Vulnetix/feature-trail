@@ -1,7 +1,7 @@
 <script lang="ts">
 import { defineComponent, computed, ref } from 'vue';
 import { useRoadmapStore } from '../stores/roadmap';
-import type { Feature } from '../shared/gman';
+import type { Feature } from '../shared/interfaces';
 import { useRouter } from 'vue-router';
 
 export default defineComponent({

@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia';
-import type { Feature, Vote } from '../shared/gman';
-import type { FeatureRequest } from '../shared/interfaces';
+import type { FeatureRequest, Feature, Vote } from '../shared/interfaces';
 
 export type { RoadmapState };
 
@@ -21,35 +20,35 @@ export const useRoadmapStore = defineStore('roadmap', {
 
     getters: {
         // Get all features
-        getFeatures: (state) => state.features.filter(feature => !feature.needsFeedback),
+        getFeatures: (state) => state.features.filter((feature: Feature) => !feature.needsFeedback),
 
         // Get completed features
         getCompletedFeatures: (state) =>
-            state.features.filter(feature => !feature.needsFeedback && feature.isComplete),
+            state.features.filter((feature: Feature) => !feature.needsFeedback && feature.isComplete),
 
         // Get features in progress
         getInProgressFeatures: (state) =>
-            state.features.filter(feature => !feature.needsFeedback && feature.inProgress),
+            state.features.filter((feature: Feature) => !feature.needsFeedback && feature.inProgress),
 
         // Get features needing feedback
         getFeedbackFeatures: (state) =>
-            state.features.filter(feature => feature.needsFeedback),
+            state.features.filter((feature: Feature) => feature.needsFeedback),
 
         // Get votes for a specific feature
         getVotesForFeature: (state) => (featureUuid: string) =>
-            state.votes.filter(vote => vote.featureUuid === featureUuid),
+            state.votes.filter((vote: Vote) => vote.featureUuid === featureUuid),
 
         // Get vote count for a feature
         getVoteCountForFeature: (state) => (featureUuid: string) =>
-            state.votes.filter(vote => vote.featureUuid === featureUuid).length,
+            state.votes.filter((vote: Vote) => vote.featureUuid === featureUuid).length,
 
         // Get features sorted by most votes
         getMostVotedFeatures: (state) => {
             return [...state.features]
                 .filter(feature => !feature.needsFeedback)
                 .sort((a, b) => {
-                    const votesForA = state.votes.filter(vote => vote.featureUuid === a.uuid).length;
-                    const votesForB = state.votes.filter(vote => vote.featureUuid === b.uuid).length;
+                    const votesForA = state.votes.filter((vote: Vote) => vote.featureUuid === a.uuid).length;
+                    const votesForB = state.votes.filter((vote: Vote) => vote.featureUuid === b.uuid).length;
                     return votesForB - votesForA; // Sort in descending order
                 });
         },
@@ -58,7 +57,7 @@ export const useRoadmapStore = defineStore('roadmap', {
             // Check if user has already voted for this feature
             // This is a simplification - in a real app, you'd check user's ID
             const userIdentifier = localStorage.getItem('userIdentifier') || '';
-            return state.votes.some(vote =>
+            return state.votes.some((vote: Vote) =>
                 vote.featureUuid === featureUuid &&
                 vote.userIdentifier === userIdentifier
             );
