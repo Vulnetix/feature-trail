@@ -1,4 +1,5 @@
 import type { Feature, Vote } from './interfaces';
+import { v4 as uuidv4 } from 'uuid';
 
 const featuresRange = 'Features!A:H';
 const votesRange = 'Votes!A:D';
@@ -85,7 +86,7 @@ export async function getAccessToken(clientId: string, secretKey: string, kvStor
             // Decode the token to check its expiration
             const decodedRefreshToken = JSON.parse(atob(refreshToken.split('.')[1]));
             const refreshExpirationTime = decodedRefreshToken.exp * 1000; // Convert to milliseconds
-            const currentTime = Date.now();
+            const currentTime = new Date().getTime();
             // If the token is still valid, return it
             if (refreshExpirationTime > currentTime) {
                 console.log('Refresh token is still valid');
@@ -159,6 +160,7 @@ export async function refreshAccessToken(clientId: string, secretKey: string, re
     const response = await fetch(url, {
         method: 'POST',
         headers: {
+            'Origin': 'https://roadmap.vulnetix.com',
             'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: body.toString(),
@@ -180,7 +182,7 @@ export async function refreshAccessToken(clientId: string, secretKey: string, re
 
 export async function requestAccessToken(clientId: string, kvStore: any): Promise<boolean> {
     // Generate a random state value for security (to prevent CSRF)
-    const state = Math.random().toString(36).substring(2, 15);
+    const state = uuidv4();
     // Store the state in CloudFlare KV for later verification
     await kvStore.put('google_oauth_csrf', state, { expirationTtl: 60 }); // minimum ttl of 60 seconds
 
@@ -190,7 +192,7 @@ export async function requestAccessToken(clientId: string, kvStore: any): Promis
     authUrl.searchParams.append('redirect_uri', encodeURIComponent('https://roadmap.vulnetix.com/oauth/callback'));
     authUrl.searchParams.append('response_type', 'code');
     authUrl.searchParams.append('scope', encodeURIComponent('https://www.googleapis.com/auth/spreadsheets'));
-    authUrl.searchParams.append('prompt', 'none');
+    // authUrl.searchParams.append('prompt', 'none');
     authUrl.searchParams.append('access_type', 'offline');
     authUrl.searchParams.append('state', state);
     authUrl.searchParams.append('include_granted_scopes', 'true');
@@ -199,15 +201,12 @@ export async function requestAccessToken(clientId: string, kvStore: any): Promis
     const response = await fetch(authUrl.toString(), {
         method: 'GET',
         headers: {
+            'Origin': 'https://roadmap.vulnetix.com',
             'Content-Type': 'application/x-www-form-urlencoded',
         },
     });
-    const raw = await response.text();
-    console.log('Google OAuth Response:', raw);
     console.error(`Google OAuth Error: ${response.status} ${response.statusText}`);
-    if (!response.ok) {
-        return false;
-    }
+
     return response.ok
 }
 
