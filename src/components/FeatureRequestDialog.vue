@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useRoadmapStore } from '../stores/roadmap';
-import type { FeatureRequest } from '../shared/interfaces';
+import { ref, onMounted } from 'vue';
+import { v4 as uuidv4 } from 'uuid';
 
 const props = defineProps<{
     modelValue: boolean;
@@ -9,114 +8,70 @@ const props = defineProps<{
 
 const emit = defineEmits<{
     (e: 'update:modelValue', value: boolean): void;
-    (e: 'success'): void;
 }>();
 
-const roadmapStore = useRoadmapStore();
-
-const title = ref<string>(``);
-const description = ref<string>(``);
-const comment = ref<string>(``);
-const loading = ref<boolean>(false);
 const snackbar = ref<boolean>(false);
 const snackbarText = ref<string>(``);
-const formValid = ref<boolean>(false);
-
-const titleRules = [
-    (v: string) => !!v || `Title is required`,
-    (v: string) => (v && v.length >= 3) || `Title must be at least 3 characters`,
-];
-
-const descriptionRules = [
-    (v: string) => !!v || `Description is required`,
-    (v: string) => (v && v.length >= 10) || `Description must be at least 10 characters`,
-];
-
-const resetForm = () => {
-    title.value = ``;
-    description.value = ``;
-    comment.value = ``;
-    formValid.value = false;
-};
+const generatedId = ref<string>(``);
 
 const closeDialog = () => {
     emit('update:modelValue', false);
-    resetForm();
 };
 
-const submitRequest = async () => {
-    if (!formValid.value) return;
-    
-    loading.value = true;
-    
-    const featureRequest: FeatureRequest = {
-        title: title.value,
-        description: description.value,
-        comment: comment.value,
-    };
-    
+const copyToClipboard = async () => {
     try {
-        await roadmapStore.submitFeatureRequest(featureRequest);
-        snackbarText.value = `Your feature request was submitted and awaits review.`;
+        await navigator.clipboard.writeText(generatedId.value);
+        snackbarText.value = `ID copied to clipboard!`;
         snackbar.value = true;
-        closeDialog();
-        emit('success');
-    } catch (error) {
-        snackbarText.value = `Error submitting feature request: ${(error as Error).message}`;
+    } catch (err) {
+        snackbarText.value = `Failed to copy ID.`;
         snackbar.value = true;
-    } finally {
-        loading.value = false;
+        console.error(`Failed to copy text: `, err);
     }
 };
+
+onMounted(() => {
+    generatedId.value = uuidv4();
+});
 </script>
 
 <template>
-    <v-dialog v-model="modelValue" max-width="600px">
+    <v-dialog :model-value="modelValue" max-width="600px" @update:model-value="closeDialog">
         <v-card>
             <v-card-title class="text-h5">Request a Feature</v-card-title>
             
             <v-card-text>
-                <v-form v-model="formValid" @submit.prevent="submitRequest">
-                    <v-text-field
-                        v-model="title"
-                        label="Feature Title"
-                        :rules="titleRules"
-                        required
-                    ></v-text-field>
-                    
-                    <v-textarea
-                        v-model="description"
-                        label="Feature Description"
-                        :rules="descriptionRules"
-                        required
-                        hint="Describe the feature you'd like to see implemented"
-                    ></v-textarea>
-                    
-                    <v-textarea
-                        v-model="comment"
-                        label="Comments (Optional)"
-                        hint="Add any additional comments or context for your initial vote"
-                        rows="3"
-                    ></v-textarea>
-                </v-form>
+                <p>To request a new feature, please contact us via one of the following methods. Please provide a brief description of the feature and quote the ID below.</p>
+                
+                <v-divider class="my-4"></v-divider>
+                
+                <p><strong>Email:</strong> <a href="mailto:support@vulnetix.com">support@vulnetix.com</a></p>
+                <p><strong>Discord:</strong> <a href="https://discord.gg/AjRacqqNWX" target="_blank" rel="noopener noreferrer">https://discord.gg/AjRacqqNWX</a></p>
+                
+                <v-divider class="my-4"></v-divider>
+                
+                <p><strong>Your Feature Request ID:</strong></p>
+                <v-sheet 
+                    elevation="1" 
+                    class="pa-2 d-flex align-center justify-space-between"
+                    rounded
+                >
+                    <code>{{ generatedId }}</code>
+                    <v-btn icon variant="text" size="small" @click="copyToClipboard">
+                        <v-icon>mdi-content-copy</v-icon>
+                        <v-tooltip activator="parent" location="top">Copy ID</v-tooltip>
+                    </v-btn>
+                </v-sheet>
             </v-card-text>
             
             <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="grey" text @click="closeDialog">Cancel</v-btn>
-                <v-btn 
-                    color="primary" 
-                    @click="submitRequest" 
-                    :loading="loading"
-                    :disabled="!formValid"
-                >
-                    Submit Request
-                </v-btn>
+                <v-btn color="primary" text @click="closeDialog">Close</v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
     
-    <v-snackbar v-model="snackbar" :timeout="5000">
+    <v-snackbar v-model="snackbar" :timeout="3000">
         {{ snackbarText }}
         <template v-slot:actions>
             <v-btn color="primary" variant="text" @click="snackbar = false">
@@ -128,4 +83,10 @@ const submitRequest = async () => {
 
 <style lang="scss" scoped>
 // Scoped styling if needed
+code {
+  background-color: rgba(var(--v-theme-on-surface), 0.05);
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-family: monospace;
+}
 </style>

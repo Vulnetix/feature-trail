@@ -96,56 +96,6 @@ export const useRoadmapStore = defineStore('roadmap', {
             }
         },
 
-        // Submit a new feature request
-        async submitFeatureRequest(featureRequest: FeatureRequest): Promise<void> {
-            this.isLoading = true;
-            this.error = null;
-
-            try {
-                // Create a SHA256 hash using the user's IP and User Agent
-                // Note: This is handled server-side as we cannot get the IP on the client
-
-                const timestamp = Math.floor(Date.now() / 1000); // Unix timestamp in seconds
-
-                const response = await fetch('/api/feature', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        ...featureRequest,
-                        timestamp,
-                        needsFeedback: true
-                    }),
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || `HTTP error ${response.status}`);
-                }
-
-                // Get the response data which should contain the new feature
-                const newFeatureData = await response.json();
-
-                // Add the new feature to the features array in the store
-                if (newFeatureData) {
-                    if (newFeatureData?.feature) {
-                        this.features.push(newFeatureData.feature);
-                    }
-                    if (newFeatureData?.vote) {
-                        this.votes.push(newFeatureData.vote);
-                    }
-                }
-
-            } catch (error) {
-                this.error = (error as any).message || 'Failed to submit feature request';
-                console.error('Error submitting feature request:', error);
-                throw error;
-            } finally {
-                this.isLoading = false;
-            }
-        },
-
         // Vote for a feature
         async voteForFeature(featureUuid: string, comment: string = ''): Promise<void> {
             // Simple user identifier stored in localStorage (in a real app, use auth)

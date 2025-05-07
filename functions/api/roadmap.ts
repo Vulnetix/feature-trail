@@ -1,31 +1,26 @@
-import { fetchRoadmapData } from '../../src/shared/gman';
-import type { PagesFunction } from '../../src/shared/interfaces';
+import { fetchFeatures } from '../../src/shared/gman';
+import type { PagesFunction, Vote, Feature } from '../../src/shared/interfaces';
 
-export const onRequest: PagesFunction = async (context: any) => {
-    // CORS headers to allow requests from your frontend
-    const headers = {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Content-Type': 'application/json'
-    };
-
-    // Handle preflight requests
-    if (context.request.method === 'OPTIONS') {
-        return new Response(null, { headers });
-    }
-
+export const onRequestGet: PagesFunction = async (context: any) => {
     try {
-        // Fetch roadmap data (features and votes)
-        const data = await fetchRoadmapData();
-        return new Response(JSON.stringify(data), { headers });
+        const features: Feature[] = await fetchFeatures()
+        const votesCache = await context.env.KV_STORE.list({prefix: 'vote:'})
+        const votes: Vote[] = []
+        for (const key of votesCache.keys) {
+            const voteData = await context.env.KV_STORE.get(key.name)
+            if (voteData) {
+                const vote: Vote = JSON.parse(voteData)
+                votes.push(vote)
+            }
+        }
+        return Response.json({ features, votes });
 
     } catch (error) {
         // Handle errors
         console.error('Error processing request:', error);
         return new Response(
             JSON.stringify({ error: (error as any).message || 'Internal server error' }),
-            { status: 500, headers }
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
         );
     }
 };

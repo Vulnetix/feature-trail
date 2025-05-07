@@ -1,7 +1,7 @@
-import type { PagesFunction, Vote, Feature, Env } from '../../../../src/shared/interfaces';
-import { saveVoteToSheet, getAccessToken } from '../../../../src/shared/gman';
+import type { PagesFunction, Vote, Env } from '../../../../src/shared/interfaces';
 
-// Handle POST requests to /api/feature/[uuid]/vote
+const HASH_NAMESPACE = '7a37826f-0628-4fcd-a084-3990c8427745'
+
 export const onRequestPost: PagesFunction = async (context) => {
     try {
         // Extract feature UUID from URL
@@ -13,7 +13,7 @@ export const onRequestPost: PagesFunction = async (context) => {
         const { comment } = requestData;
         
         // Get timestamp as number (using Date.now() for milliseconds since epoch)
-        const timestamp = Date.now();
+        const timestamp = new Date().getTime();
         
         // Get IP address and User Agent for SHA256 hash
         const ip = request.headers.get('CF-Connecting-IP') || 
@@ -22,11 +22,11 @@ export const onRequestPost: PagesFunction = async (context) => {
         const userAgent = request.headers.get('User-Agent') || 'unknown-user-agent';
         
         // Generate SHA256 hash from IP + User Agent using SubtleCrypto
-        const hashInput = `${ip}:${userAgent}`;
+        const hashInput = `${HASH_NAMESPACE}:${ip}:${userAgent}`;
         const encoder = new TextEncoder();
         const data = encoder.encode(hashInput);
         const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-        
+
         // Convert hash buffer to hex string
         const hashArray = Array.from(new Uint8Array(hashBuffer));
         const sha256 = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
@@ -38,44 +38,12 @@ export const onRequestPost: PagesFunction = async (context) => {
             timestamp,
             comment: comment || '',
         };
-        
-        // Get OAuth 2.0 Access Token
-        const clientId = (context.env as Env).GOOGLE_CLIENT_ID;
-        const secretKey = (context.env as Env).GOOGLE_CLIENT_SECRET;
-        if (!secretKey || !clientId) {
-            console.error('GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is not defined in environment variables.');
-            return new Response(
-                JSON.stringify({
-                    error: 'Server configuration error: API key not found'
-                }),
-                {
-                    status: 500,
-                    headers: { 'Content-Type': 'application/json' }
-                }
-            );
-        }
-        
-        const accessToken = await getAccessToken(clientId, secretKey, (context.env as Env).KV_STORE);
+        // Save vote to KVM
+        const kvKey = `vote:${vote.sha256}`;
+        const kvValue = JSON.stringify(vote);
+        await (context.env as Env).KV_STORE.put(kvKey, kvValue);            
 
-        if (!accessToken) {
-            return new Response(`Unable to retrieve access token.`, { status: 401 });
-        }
-
-        let featuresString = await (context.env as Env).KV_STORE.get("features");
-        let features: Feature[] = featuresString ? JSON.parse(featuresString) : [];
-        
-        // Save vote to Google Sheets
-        await saveVoteToSheet(vote, accessToken);
-        
-        await (context.env as Env).KV_STORE.put("features", JSON.stringify(features));
-
-        return new Response(
-            JSON.stringify({ message: 'Vote recorded successfully' }),
-            {
-                status: 200,
-                headers: { 'Content-Type': 'application/json' }
-            }
-        );
+        return Response.json({ vote });
         
     } catch (error) {
         console.error('Error processing vote:', error);
