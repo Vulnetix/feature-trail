@@ -18,9 +18,9 @@ export default defineComponent({
     },
     setup(props) {
         const roadmapStore = useRoadmapStore();
-        const router = useRouter();
         const showVoteDialog = ref(false);
         const voteComment = ref('');
+        const router = useRouter();
 
         const votes = computed(() => {
             return roadmapStore.getVotesForFeature(props.feature.uuid);
@@ -44,6 +44,10 @@ export default defineComponent({
             showVoteDialog.value = false;
             voteComment.value = '';
         };
+
+        const clickFeature = (featureUuid: string) => {
+            router.push(`/feature/${featureUuid}`);
+        }
 
         // Format date string
         const formatDate = (dateString: string): string | null => {
@@ -70,7 +74,8 @@ export default defineComponent({
             voteComment,
             handleVoteClick,
             submitVote,
-            cancelVote
+            cancelVote,
+            clickFeature
         };
     }
 });
@@ -94,8 +99,11 @@ export default defineComponent({
                     +{{ voteCount }}
                 </div>
             </div>
-            
-            <div class="feature-content flex-grow-1">
+            <div
+                class="feature-content flex-grow-1"
+                @click="() => clickFeature(feature.uuid)"
+                :style="{ cursor: 'pointer' }"
+            >
                 <div class="d-flex align-center mb-1">
                     <v-chip 
                         v-if="feature.inProgress" 
@@ -122,15 +130,10 @@ export default defineComponent({
                     Target Release: {{ feature.targetRelease }}
                 </div>
                 <div class="d-flex align-center mt-2">
-                    <v-btn 
-                        variant="text"
-                        density="compact"
-                        class="pa-0 mr-4"
-                        :to="`/feature/${feature.uuid}`"
-                    >
+                    <div class="pa-0 mr-4">
                         <v-icon size="small" class="mr-1">mdi-comment-outline</v-icon>
                         <span class="text-caption">{{ votes.length }} Comment{{ votes.length === 1 ? '' : 's' }}</span>
-                    </v-btn>
+                    </div>
                 </div>
             </div>
         </div>
