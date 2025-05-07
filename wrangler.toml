@@ -1,0 +1,11 @@
+name = "vulnetix-roadmap"
+main = "src/main.ts"
+compatibility_date = "2024-03-20"
+compatibility_flags = ["nodejs_compat"]
+upload_source_maps = true
+account_id = "e302589106b4c4287aebe65763eb4f80"
+workers_dev = true
+
+[[kv_namespaces]]
+binding = "KV_STORE"
+id = "b2a388b4a9fd4a378c96135ad55c8777"

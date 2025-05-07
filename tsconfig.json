@@ -1,3 +1,4 @@
+// TypeScript configuration file for a Cloudflare Workers project
 {
   "files": [],
   "references": [
@@ -7,10 +8,40 @@
     {
       "path": "./tsconfig.app.json"
     }
-],
-"compilerOptions": {
+  ],
+  "compilerOptions": {
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "@shared/*": [
+        "./shared/*"
+      ],
+      "@core/*": [
+        "./src/@core/*"
+      ],
+      "@layouts/*": [
+        "./src/@layouts/*"
+      ],
+      "@images/*": [
+        "./src/assets/images/*"
+      ],
+      "@styles/*": [
+        "./src/styles/*"
+      ],
+      "@configured-variables": [
+        "./src/styles/variables/_template.scss"
+      ],
+      "@axios": [
+        "./src/plugins/axios"
+      ]
+    },
     "types": [
-        "@cloudflare/workers-types/2023-07-01"
-    ]
-}
+      "worker-configuration.d.ts", "node"
+    ],
+    "sourceMap": true,
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "resolveJsonModule": true
+  }
 }
