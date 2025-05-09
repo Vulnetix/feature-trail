@@ -2,6 +2,7 @@
 import { RouterLink, RouterView } from 'vue-router';
 import { ref, computed, watch } from 'vue';
 import FeatureRequestDialog from './components/FeatureRequestDialog.vue';
+import ScrollToTop from './components/ScrollToTop.vue';
 import { useThemeStore } from './stores/theme';
 import { useTheme } from 'vuetify';
 
@@ -80,6 +81,8 @@ const handleRequestSuccess = () => {
             v-model="showFeatureRequestDialog"
             @success="handleRequestSuccess"
         />
+        
+        <ScrollToTop />
     </v-app>
 </template>
 
