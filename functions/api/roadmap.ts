@@ -3,7 +3,7 @@ import type { PagesFunction, Vote, Feature } from '../../src/shared/interfaces';
 
 export const onRequestGet: PagesFunction = async (context: any) => {
     try {
-        const features: Feature[] = await fetchFeatures()
+        const features: Feature[] = await fetchFeatures(context.env.SPREADSHEET_FEATURES_RANGE, context.env.SPREADSHEET_ID, context.env.SPREADSHEET_FEATURES_MAPPING);
         const votesCache = await context.env.KV_STORE.list({prefix: 'vote:'})
         const votes: Vote[] = []
         for (const key of votesCache.keys) {

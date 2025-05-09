@@ -19,20 +19,33 @@ export interface FeatureRequest {
     comment: string;
 }
 
-export interface Feature {
-uuid: string;
+export class FeatureObject {
+    uuid: `${string}-${string}-${string}-${string}-${string}` = crypto.randomUUID();
+    title: string = '';
+    description: string = '';
+    timestamp: number = new Date().getTime();
+    isComplete: boolean = false;
+    needsFeedback: boolean = true;
+    inProgress: boolean = false;
+    targetRelease?: string = undefined;
+}
+
+export interface Feature extends FeatureObject {}
+
+export interface FeatureMap {
+    uuid: `${string}-${string}-${string}-${string}-${string}`;
     title: string;
     description: string;
-    timestamp: number;
-    isComplete: boolean;
-    needsFeedback: boolean;
-    inProgress: boolean;
-    targetRelease?: string;
+    timestamp: string;
+    isComplete: string;
+    needsFeedback: string;
+    inProgress: string;
+    targetRelease: string;
 }
 
 export interface Vote {
     sha256: string;
-    featureUuid: string;
+    featureUuid: `${string}-${string}-${string}-${string}-${string}`;
     timestamp: number;
     comment?: string;
     userIdentifier?: string;
