@@ -1,6 +1,6 @@
-# FeatureTrail
+<img src="src/assets/logo.png" alt="FeatureTrail Logo" width="200" />
 
-A Google Sheets powered roadmap site, hosted on CloudFlare Pages
+**FeatureTrail** is a Google Sheets powered roadmap site, hosted on CloudFlare Pages.
 
 This application allows non-technical people to keep a product roadmap updated in a Google spreadsheet, while providing technical configuration options to adapt to spreadsheet changes without requiring code modifications.
 
