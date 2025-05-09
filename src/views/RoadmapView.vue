@@ -2,6 +2,7 @@
 import { defineComponent, onMounted, ref } from 'vue';
 import { useRoadmapStore } from '../stores/roadmap';
 import FeatureItem from '../components/FeatureItem.vue';
+import type { Feature } from '../shared/interfaces';
 
 export default defineComponent({
     name: 'RoadmapView',
@@ -19,6 +20,8 @@ export default defineComponent({
         });
         const previousFeatureCount = ref(0);
         const isInitialLoad = ref(true);
+        const searchQuery = ref('');
+        const searchResults = ref<Feature[]>([]);
         
         // Fetch roadmap data on component mount
         onMounted(() => {
@@ -78,13 +81,40 @@ export default defineComponent({
             alert.value.show = false;
         };
         
+        const handleSearch = (val: string) => {
+            searchQuery.value = val;
+            if (val.trim()) {
+                searchResults.value = roadmapStore.searchFeatures(val);
+            } else {
+                searchResults.value = [];
+            }
+        };
+        
+        const handleSearchSelection = (val: string) => {
+            console.log('Selected value:', val);
+            const selectedFeature = roadmapStore.features.find(feature => feature.uuid === val);
+            if (selectedFeature) {
+                // Scroll to the selected feature
+                const element = document.getElementById(`feature-${selectedFeature.uuid}`);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+            searchQuery.value = '';
+            searchResults.value = [];
+        };
+
         return {
             roadmapStore,
             refreshData,
             activeTab,
             handleTabChange,
             alert,
-            closeAlert
+            closeAlert,
+            searchQuery,
+            searchResults,
+            handleSearchSelection,
+            handleSearch
         };
     }
 });
@@ -105,6 +135,34 @@ export default defineComponent({
             >
                 {{ alert.message }}
             </v-alert>
+
+            <!-- Search bar -->
+            <v-row justify="center" class="mb-2">
+                <v-col cols="12" sm="10" md="8" lg="6">
+                    <v-autocomplete
+                        v-model="searchQuery"
+                        label="Search features"
+                        placeholder="Search by UUID, title, or description"
+                        prepend-inner-icon="mdi-magnify"
+                        clearable
+                        hide-no-data
+                        :items="searchResults"
+                        item-title="title"
+                        item-value="uuid"
+                        @update:search="handleSearch"
+                        @update:model-value="handleSearchSelection"
+                    >
+                        <template v-slot:item="{ props, item }">
+                            <v-list-item v-bind="props">
+                                <v-list-item-title>
+                                    {{ item.raw.description.substring(0, 100) }}{{ item.raw.description.length > 100 ? '...' : '' }}
+                                </v-list-item-title>
+                                <v-list-item-subtitle>{{ item.raw.uuid }}</v-list-item-subtitle>
+                            </v-list-item>
+                        </template>
+                    </v-autocomplete>
+                </v-col>
+            </v-row>
             
             <!-- Tab navigation -->
             <div class="navigation-tabs py-2 d-flex justify-center">

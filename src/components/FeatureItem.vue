@@ -109,7 +109,7 @@ export default defineComponent({
 </script>
 
 <template>
-    <div class="feature-item">
+    <div class="feature-item" :id="`feature-${feature.uuid}`">
         <div class="d-flex">
             <div class="vote-column mr-4">
                 <v-tooltip location="left" theme="light">

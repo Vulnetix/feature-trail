@@ -33,6 +33,23 @@ export const useRoadmapStore = defineStore('roadmap', {
         // Get features needing feedback
         getFeedbackFeatures: (state) =>
             state.features.filter((feature: Feature) => feature.needsFeedback),
+            
+        // Search for features based on uuid, title, or description
+        searchFeatures: (state) => (searchQuery: string, includeNeedsFeedback = true) => {
+            if (!searchQuery || searchQuery.trim() === '') {
+                return [];
+            }
+            
+            const query = searchQuery.trim().toLowerCase();
+            
+            return state.features
+                .filter(feature => includeNeedsFeedback || !feature.needsFeedback)
+                .filter(feature => 
+                    feature.uuid === query || 
+                    feature.title.toLowerCase().includes(query) || 
+                    feature.description.toLowerCase().includes(query)
+                );
+        },
 
         // Get votes for a specific feature
         getVotesForFeature: (state) => (featureUuid: string) =>
