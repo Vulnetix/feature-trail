@@ -20,7 +20,7 @@ export interface FeatureRequest {
 }
 
 export class FeatureObject {
-    uuid: `${string}-${string}-${string}-${string}-${string}` = crypto.randomUUID();
+    uuid: string = crypto.randomUUID();
     title: string = '';
     description: string = '';
     timestamp: number = new Date().getTime();
@@ -33,7 +33,7 @@ export class FeatureObject {
 export interface Feature extends FeatureObject {}
 
 export interface FeatureMap {
-    uuid: `${string}-${string}-${string}-${string}-${string}`;
+    uuid: string;
     title: string;
     description: string;
     timestamp: string;
@@ -45,7 +45,7 @@ export interface FeatureMap {
 
 export interface Vote {
     sha256: string;
-    featureUuid: `${string}-${string}-${string}-${string}-${string}`;
+    featureUuid: string;
     timestamp: number;
     comment?: string;
     userIdentifier?: string;
