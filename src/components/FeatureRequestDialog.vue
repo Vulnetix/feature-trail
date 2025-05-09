@@ -2,6 +2,10 @@
 import { ref, onMounted } from 'vue';
 import { v4 as uuidv4 } from 'uuid';
 
+const supportEmail = ref(import.meta.env.VITE_SUPPORT_EMAIL)
+const supportOtherName = ref(import.meta.env.VITE_SUPPORT_OTHER_NAME)
+const supportOtherUrl = ref(import.meta.env.VITE_SUPPORT_OTHER_URL)
+
 const props = defineProps<{
     modelValue: boolean;
 }>();
@@ -45,8 +49,8 @@ onMounted(() => {
                 
                 <v-divider class="my-4"></v-divider>
                 
-                <p><strong>Email:</strong> <a href="mailto:support@vulnetix.com">support@vulnetix.com</a></p>
-                <p><strong>Discord:</strong> <a href="https://discord.gg/AjRacqqNWX" target="_blank" rel="noopener noreferrer">https://discord.gg/AjRacqqNWX</a></p>
+                <p v-if="supportEmail"><strong>Email:</strong> <a :href="`mailto:${supportEmail}`">{{ supportEmail }}</a></p>
+                <p v-if="supportOtherUrl && supportOtherName"><strong>{{ supportOtherName }}:</strong> <a :href="supportOtherUrl" target="_blank" rel="noopener noreferrer">{{ supportOtherUrl }}</a></p>
                 
                 <v-divider class="my-4"></v-divider>
                 

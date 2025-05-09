@@ -9,7 +9,7 @@ import Fonts from 'unplugin-fonts/vite'
 // https://vitejs.dev/config/
 export default defineConfig({
     server: {
-        allowedHosts: ['.vulnetix.com', 'localhost', '127.0.0.1'],
+        allowedHosts: ['localhost', '127.0.0.1'],
         strictPort: true,
         port: 5173,
     },

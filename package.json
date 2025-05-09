@@ -1,9 +1,9 @@
 {
-	"name": "vulnetix-roadmap",
+	"name": "feature-trail",
 	"version": "0.1.0",
 	"main": "index.js",
-	"repository": "git@github.com:Vulnetix/roadmap.git",
-	"author": "chris@vulnetix.com",
+	"repository": "git@github.com:Vulnetix/feature-trail.git",
+	"author": "Chtistopher Langton <chris@vulnetix.com>",
 	"license": "None",
 	"private": true,
 	"type": "module",
@@ -12,7 +12,7 @@
 		"dev": "vite",
 		"build": "wrangler types && run-p type-check \"build-only {@}\" --",
 		"preview": "wrangler pages dev ./dist",
-		"watch": "wrangler types && vite build --watch",
+		"watch": "vite build --watch",
 		"build-only": "vite build",
 		"type-check": "vue-tsc --build",
 		"deploy": "yarn run build && wrangler pages deploy ./dist"

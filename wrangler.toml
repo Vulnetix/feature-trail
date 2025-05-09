@@ -1,4 +1,4 @@
-name = "vulnetix-roadmap"
+name = "roadmap"
 main = "src/main.ts"
 compatibility_date = "2024-03-20"
 compatibility_flags = ["nodejs_compat"]

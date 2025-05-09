@@ -5,6 +5,7 @@ import FeatureRequestDialog from './components/FeatureRequestDialog.vue';
 import { useThemeStore } from './stores/theme';
 import { useTheme } from 'vuetify';
 
+const site_name = ref(import.meta.env.VITE_SITE_TITLE || 'FeatureTrail');
 const themeStore = useThemeStore();
 const vuetifyTheme = useTheme();
 
@@ -38,7 +39,7 @@ const handleRequestSuccess = () => {
                 <RouterLink to="/" class="logo">
                     <img src="./assets/logo.png" alt="Logo" class="logo-img"/>
                     <div class="logo-text" :class="{ 'text-light': isDarkTheme, 'text-dark': !isDarkTheme }">
-                        Vulnetix Roadmap
+                        {{ site_name }}
                     </div>
                 </RouterLink>
             </v-toolbar-title>
