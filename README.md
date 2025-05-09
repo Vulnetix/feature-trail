@@ -12,6 +12,7 @@ This application allows non-technical people to keep a product roadmap updated i
 - 🆕 **Feature Request**: Directions for customers to request new features for inclusion in the roadmap
 - 🔍 **Tracking**: Customers who request features are provided an ID so they can track feature status
 - 🔎 **Search**: Simple search using ID (exact), or any part of the feature name or description
+- **Theming**: Default dark theme, light mode switcher. Powered by Vuefity theming engine.
 
 ## 🚀 Install
 

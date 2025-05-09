@@ -6,12 +6,19 @@ import '@mdi/font/css/materialdesignicons.css'; // Import Material Design Icons
 
 import App from './App.vue'
 import router from './router'
+import { useThemeStore } from './stores/theme';
 
-const app = createApp(App)
+const app = createApp(App);
+const pinia = createPinia();
+app.use(pinia);
+
+// Initialize the theme store
+const themeStore = useThemeStore();
+themeStore.initializeTheme();
 
 const vuetify = createVuetify({
     theme: {
-        defaultTheme: 'dark',
+        defaultTheme: themeStore.currentTheme, // Use the theme from the store
         themes: {
             dark: {
                 dark: true,
@@ -25,6 +32,18 @@ const vuetify = createVuetify({
                     warning: '#FFC107',
                 },
             },
+            light: {
+                dark: false,
+                colors: {
+                    primary: '#1976D2',
+                    secondary: '#E0E0E0',
+                    accent: '#64B5F6',
+                    error: '#F44336',
+                    info: '#2196F3',
+                    success: '#4CAF50',
+                    warning: '#FFC107',
+                },
+            },
         },
     },
     icons: {
@@ -32,8 +51,7 @@ const vuetify = createVuetify({
     },
 });
 
-app.use(createPinia())
-app.use(router)
+app.use(router);
 app.use(vuetify);
 
-app.mount('#app')
+app.mount('#app');

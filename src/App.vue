@@ -1,7 +1,24 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router';
-import { ref } from 'vue';
+import { ref, computed, watch } from 'vue';
 import FeatureRequestDialog from './components/FeatureRequestDialog.vue';
+import { useThemeStore } from './stores/theme';
+import { useTheme } from 'vuetify';
+
+const themeStore = useThemeStore();
+const vuetifyTheme = useTheme();
+
+// Set up a computed property to determine the current theme
+const isDarkTheme = computed(() => themeStore.currentTheme === 'dark');
+
+// Watch for theme changes and update Vuetify's theme accordingly
+watch(() => themeStore.currentTheme, (newTheme) => {
+    vuetifyTheme.global.name.value = newTheme;
+});
+
+const toggleTheme = () => {
+    themeStore.toggleTheme();
+};
 
 const showFeatureRequestDialog = ref<boolean>(false);
 
@@ -15,24 +32,44 @@ const handleRequestSuccess = () => {
 </script>
 
 <template>
-    <v-app>
-        <v-app-bar app dark>
+    <v-app :theme="themeStore.currentTheme">
+        <v-app-bar app>
             <v-toolbar-title>
                 <RouterLink to="/" class="logo">
                     <img src="./assets/logo.png" alt="Logo" class="logo-img"/>
-                    <div class="logo-text">
+                    <div class="logo-text" :class="{ 'text-light': isDarkTheme, 'text-dark': !isDarkTheme }">
                         Vulnetix Roadmap
                     </div>
                 </RouterLink>
             </v-toolbar-title>
             <v-spacer></v-spacer>
-            <v-btn
-                color="primary"
-                variant="outlined"
-                @click="openFeatureRequestDialog"
-            >
-                Request Feature
-            </v-btn>
+            <v-btn-group>
+                <v-tooltip
+                    :text="isDarkTheme ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+                    location="bottom"
+                >
+                    <template v-slot:activator="{ props }">
+                        <v-btn
+                            icon
+                            @click="toggleTheme"
+                            class="me-2"
+                            aria-label="Toggle theme"
+                            v-bind="props"
+                        >
+                            <v-icon>
+                                {{ isDarkTheme ? 'mdi-weather-sunny' : 'mdi-moon-waning-crescent' }}
+                            </v-icon>
+                        </v-btn>
+                    </template>
+                </v-tooltip>
+                <v-btn
+                    color="primary"
+                    variant="tonal"
+                    @click="openFeatureRequestDialog"
+                >
+                    Request Feature
+                </v-btn>
+            </v-btn-group>
         </v-app-bar>
         <v-main>
             <RouterView />
@@ -63,7 +100,6 @@ const handleRequestSuccess = () => {
         font-size: 1.25rem; // Responsive font size
         font-weight: 600; // Slightly bolder
         line-height: 1.2; // Adjust line height for better vertical alignment
-        color: #FFFFFF; // Ensure high contrast
     }
 }
 
